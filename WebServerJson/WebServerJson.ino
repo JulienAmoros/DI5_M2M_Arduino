@@ -78,26 +78,18 @@ void loop() {
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
           client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          client.println("Connection: close");  // the connection will be closed after completion of the response
-	        client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+          client.println("Content-Type: application/json");
+          //client.println("Connection: close");  // the connection will be closed after completion of the response
+          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
           client.println();
-          client.println("<!DOCTYPE HTML>");
-          client.println("<html>");
-          // output the value of each analog input pin
-          /*for (int analogChannel = 0; analogChannel < 6; analogChannel++) {
-            int sensorReading = analogRead(analogChannel);
-            client.print("analog input ");
-            client.print(names[analogChannel]);
-            client.print(" is ");
-            client.print(sensorReading);
-            client.println("<br />");       
-          }*/
+          client.println("{");
+          
           printLine(0, analogRead(0));
           printLine(1, dht.readHumidity());
           printLine(2, dht.readTemperature());
-          
-          client.println("</html>");
+
+          client.println("\t\"date\":0");
+          client.println("}");
           break;
         }
         if (c == '\n') {
@@ -119,10 +111,10 @@ void loop() {
 }
 
 void printLine(int analogChannel, double sensorReading){
-  client.print("analog input ");
+  client.print("\t\"");
   client.print(names[analogChannel]);
-  client.print(" is ");
+  client.print("\":");
   client.print(sensorReading);
-  client.println("<br />");
+  client.println(",");
 }
 
