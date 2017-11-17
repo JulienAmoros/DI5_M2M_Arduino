@@ -18,8 +18,11 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include "DHT.h"
+#include <stdio.h>
+#include <string.h>
 
 #define PinDHT A1     //connecte sur A1
+#define PIN_LED 4
 
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
@@ -29,8 +32,10 @@ void printLine(int analogChannel, double sensorReading);
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
-byte mac[] = { 0x90, 0xA2, 0xDA, 0x0E, 0xA9, 0x9A };
-IPAddress ip(192,168,0,1);
+byte mac[] = { 0x90, 0xA2, 0xDA, 0x0E, 0xA9, 0xB3 };
+//IPAddress ip(192,168,0,1);
+
+IPAddress ip(169,254,1,1);
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use 
@@ -38,7 +43,7 @@ IPAddress ip(192,168,0,1);
 EthernetServer server(80);
 
 // Peripherals name
-char* names[] = {"Potentiometre", "Humidity", "Temperature", "", "", ""};
+char* names[] = {"potentiometre", "humidity", "temperature", "", "", ""};
 
 EthernetClient client;
 
@@ -52,6 +57,9 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
+  // Light on LED
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite[PIN_LED, HIGH);
 
   // start the Ethernet connection and the server:
   Ethernet.begin(mac, ip);
@@ -64,6 +72,10 @@ void setup() {
 void loop() {
   // listen for incoming clients
   client = server.available();
+
+  char str[1000];
+  int i = 0;
+
   if (client) {
     Serial.println("new client");
     // an http request ends with a blank line
@@ -76,27 +88,20 @@ void loop() {
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: application/json");
-          //client.println("Connection: close");  // the connection will be closed after completion of the response
-          client.println("Refresh: 5");  // refresh the page automatically every 5 sec
-          client.println();
-          client.println("{");
-          
-          printLine(0, analogRead(0));
-          printLine(1, dht.readHumidity());
-          printLine(2, dht.readTemperature());
-
-          client.println("\t\"date\":0");
-          client.println("}");
+          respond(str);
+          i=0;
           break;
         }
         if (c == '\n') {
+          //strcat(str, c);
+          str[i++] = c;
+          str[i++] = 0;
           // you're starting a new line
           currentLineIsBlank = true;
         } 
         else if (c != '\r') {
+          //strcat(str, c);
+          str[i++] = c;
           // you've gotten a character on the current line
           currentLineIsBlank = false;
         }
@@ -116,5 +121,30 @@ void printLine(int analogChannel, double sensorReading){
   client.print("\":");
   client.print(sensorReading);
   client.println(",");
+}
+
+void respond(char * str){
+  Serial.write(str);
+  if(str[0]=='G'){
+    Serial.write("Answering to GET - Standard answer");
+  // send a standard http response header
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: application/json");
+    client.println();
+    client.println("{");
+    
+    printLine(0, analogRead(0));
+    printLine(1, dht.readHumidity());
+    printLine(2, dht.readTemperature());
+
+    client.println("\t\"date\":0");
+    client.println("}");
+  }
+  else if(str[0] == 'P'){
+    
+  }
+  else{
+    Serial.println("Invalid request");
+  }
 }
 

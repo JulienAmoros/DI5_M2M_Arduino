@@ -29,8 +29,10 @@ void printLine(int analogChannel, double sensorReading);
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
-byte mac[] = { 0x90, 0xA2, 0xDA, 0x0E, 0xA9, 0x9A };
-IPAddress ip(192,168,0,1);
+byte mac[] = { 0x90, 0xA2, 0xDA, 0x0E, 0xA9, 0xB3 };
+//IPAddress ip(192,168,0,1);
+
+IPAddress ip(169,254,1,1);
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use 
