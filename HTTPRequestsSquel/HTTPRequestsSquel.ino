@@ -68,23 +68,18 @@ void loop() {
       if (client.available()) {
         char c = client.read();
         //Serial.write(c);
-        // if you've gotten to the end of the line (received a newline
-        // character) and the line is blank, the http request has ended,
-        // so you can send a reply
+        
+        // HTTP request end of header
         if (c == '\n' && currentLineIsBlank) {
           head = head.substring(0, head.length()-1);
           
-          // Put arguments in body table
+          // Put content string in body table
           while (client.available()) {
             body += (char) client.read();
             //Serial.write(client.read());
           }
           
-          /*Serial.println("HEAD");
-          Serial.println(head);
-          Serial.println("BODY");
-          Serial.println(body);*/
-          
+          // Process and send proper response
           respond(head, body);
 
           break;
@@ -115,20 +110,20 @@ void respond(String head, String body){
   
   if(http_word == "POST"){
     doPost(head, body);
-  }
-  
-  if(http_word == "GET"){
+  } else if(http_word == "GET"){
     doGet(head, body);
-  }
-  
-  if(http_word == "PUT"){
+  } else if(http_word == "PUT"){
     doPut(head, body);
-  }
-  
-  if(http_word == "DELETE"){
+  }else if(http_word == "DELETE"){
     doDelete(head, body);
+  }else {
+    Serial.print("Error: HTTP word ");
+    Serial.print(http_word);
+    Serial.println(" is not recognised.");
+    
+    client.println("HTTP/1.1 400 Bad Request");
+    client.println("Connection: close");
   }
-  
 }
 
 // Get the fisrt word of param (HTTP word if param is request's head)
