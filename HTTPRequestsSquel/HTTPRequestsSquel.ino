@@ -113,12 +113,6 @@ void respond(String head, String body){
   String ressource = getRessource(head);
   String protocol_version = getProtocolVersion(head);
   
-  Serial.println(head);
-  
-  Serial.println(http_word);
-  Serial.println(ressource);
-  Serial.println(protocol_version);
-  
   if(http_word == "POST"){
     doPost(head, body);
   }
@@ -135,11 +129,95 @@ void respond(String head, String body){
     doDelete(head, body);
   }
   
-    // send a standard http response header
+}
+
+// Get the fisrt word of param (HTTP word if param is request's head)
+String getHttpWord(String head){
+  return head.substring(0, head.indexOf(' '));
+}
+
+// Get the 2nd word of param (ressource if param is request's head)
+String getRessource(String head){
+  int index_2nd_space = head.indexOf(' ', head.indexOf(' ')+1);
+  
+  return head.substring(head.indexOf(' ')+1, index_2nd_space);
+}
+
+// Get the 3rd word of param (Protocol/version if param is request's head)
+String getProtocolVersion(String head){
+  int index_2nd_space = head.indexOf(' ', head.indexOf(' ')+1);
+  int index_endline = head.indexOf('\n');
+  
+  return head.substring(index_2nd_space+1, index_endline);
+}
+
+// Get the value of a particular key in the head (non case-sensitive)
+String getHeadValueOf(String head, String key){
+  head.toLowerCase();
+  key.toLowerCase();
+  
+  int key_start = head.indexOf(key);
+  int key_end = head.indexOf(' ', key_start);
+  
+  if(key_start < 0){
+    return "";
+  }
+  
+  int value_start = key_end;
+  int value_end = head.indexOf('\n', value_start);
+  
+  String value = head.substring(value_start, value_end);
+  value.trim();
+  
+  return value;
+}
+
+// Get value of parameters in body
+String getBodyValue(String body, String key){
+  body.toLowerCase();
+  key.toLowerCase();
+  
+  int start_key = body.indexOf(key);
+  int start_value = body.indexOf('=', start_key);
+  int end_value = body.indexOf('&', start_key);
+  
+  return body.substring(start_value+1, end_value);
+}
+
+// Describe here what to do when POST received
+void doPost(String head, String body){
+  int red = getBodyValue(body, "red").toInt();
+  int green = getBodyValue(body, "green").toInt();
+  int blue = getBodyValue(body, "blue").toInt();
+  
+  Serial.println(red);
+  Serial.println(green);
+  Serial.println(blue);
+  
+  // Light RGB Led
+  
+  client.println("HTTP/1.1 200 OK");
+  client.println("Connection: close");
+}
+
+// Describe here what to do when GET received
+void doGet(String head, String body){
+  String accepting = getHeadValueOf(head, "accept");
+  Serial.println(accepting);
+  if(accepting.indexOf("json") >= 0){
+    // Send JSON response
+    
+  }else{
+    // Send HTML response
+    
+  }
+  
+  // TODO: put next on HTML part up here
+  // send a standard http response header
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println("Connection: close");  // the connection will be closed after completion of the response
-  client.println("Refresh: 5");  // refresh the page automatically every 5 sec
+  //client.println("Refresh: 5");  // refresh the page automatically every 5 sec
   client.println();
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
@@ -155,19 +233,13 @@ void respond(String head, String body){
   client.println("</html>");
 }
 
-String getHttpWord(String head){
-  return head.substring(0, head.indexOf(' '));
+// Describe here what to do when POST received
+void doPut(String head, String body){
+  Serial.println("Nothing implemented on PUT request");
 }
 
-String getRessource(String head){
-  int index_2nd_space = head.indexOf(' ', head.indexOf(' ')+1);
-  
-  return head.substring(head.indexOf(' ')+1, index_2nd_space);
+// Describe here what to do when DELETE received
+void doDelete(String head, String body){
+  Serial.println("Nothing implemented on DELETE request");
 }
 
-String getProtocolVersion(String head){
-  int index_2nd_space = head.indexOf(' ', head.indexOf(' ')+1);
-  int index_endline = head.indexOf('\n');
-  
-  return head.substring(index_2nd_space+1, index_endline);
-}

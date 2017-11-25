@@ -1,0 +1,5 @@
+# POST request with datas and particular header
+curl -v --data "red=55&green=45&blue=90" --header "Accept: text/json" http://10.0.0.2/resource
+
+# Request with specific HTTP word
+curl -v -X REQUESTWORD http://10.0.0.2
