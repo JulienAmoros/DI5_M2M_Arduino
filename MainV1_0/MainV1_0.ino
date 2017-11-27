@@ -81,9 +81,6 @@ void loop() {
             body += (char) client.read();
           }
           
-          Serial.println("RESULT HEAD:");
-          Serial.println(head);
-          
           // Process and send proper response
           respond(head, body);
 
@@ -115,8 +112,6 @@ void loop() {
 
 void respond(String head, String body){
   String http_word = getHttpWord(head);
-  String ressource = getRessource(head);
-  String protocol_version = getProtocolVersion(head);
   
   if(http_word == "POST"){
     doPost(head, body);
@@ -186,7 +181,9 @@ String getBodyValue(String body, String key){
   int start_value = body.indexOf('=', start_key);
   int end_value = body.indexOf('&', start_key);
   
-  return body.substring(start_value+1, end_value);
+  String value = body.substring(start_value+1, end_value);
+  
+  return value;
 }
 
 // Describe here what to do when POST received
@@ -201,8 +198,7 @@ void doPost(String head, String body){
   
   // Light RGB Led
   
-  client.println("HTTP/1.1 200 OK");
-  client.println("Connection: close");
+  doGet(head, body);
 }
 
 // Describe here what to do when GET received
@@ -213,28 +209,14 @@ void doGet(String head, String body){
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println("Connection: close");  // the connection will be closed after completion of the response
-  client.println("Refresh: 5");  // refresh the page automatically every 5 sec
   client.println();
   client.println("<!DOCTYPE HTML>");
-  client.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">");
   client.println("<html>");
 
   temperature= bme280GetTemperature(bme280ReadUT());
   pression = bme280GetPressure(bme280ReadUP());
   altitude=estime_altitude (pression,temperature);
   humidite= bme208GetHumidity();
-  
-  ///////////////////////////
-  Serial.print("Temperature: ");
-  Serial.println(temperature);
-  Serial.print("Pression: ");
-  Serial.println(pression);
-  Serial.print("Altitude: ");
-  Serial.println(altitude);
-  Serial.print("Humidite: ");
-  Serial.println(humidite);
- Serial.println("");
- //////////////////////
           
   printLine(0, temperature);
   printLine(1, humidite);
