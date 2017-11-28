@@ -1,12 +1,13 @@
 /*
-  Web Server
+  Web Server weather datas and RGB led Lighting through HTTP
 
- A simple web server that shows the value of the analog input pins.
- using an Arduino Wiznet Ethernet shield.
+ A Webserver that gives html page with weather datas and a form to light a RGB LED.
 
  Circuit:
  * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
+ * RGB LED on D7
+ * BME280 on I2C bus
+ * Rotary angle analog input on A0 (facultative)
 
  created 18 Dec 2009
  by David A. Mellis
@@ -19,6 +20,10 @@
 
 #include <SPI.h>
 #include <Ethernet.h>
+#include "ChainableLED.h"
+
+#define NUM_LEDS  5 //Led branché sur D7
+ChainableLED leds(7, 8, NUM_LEDS);
 
 char * getHttpWord(char * head);
 char * getRessource(char * head);
@@ -47,6 +52,9 @@ void setup() {
   
   // Init sensor
   getbmp085Calibration();
+  
+  // Init RGB LED
+  leds.init();
 
   // start the Ethernet connection and the server:
   Ethernet.begin(mac, ip);
@@ -197,6 +205,10 @@ void doPost(String head, String body){
   Serial.println(blue);
   
   // Light RGB Led
+  for (byte i=0; i<NUM_LEDS; i++)
+  {
+    leds.setColorRGB(i,red,green,blue);
+  }
   
   doGet(head, body);
 }
